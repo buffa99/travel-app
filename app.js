@@ -1,7 +1,6 @@
 'use strict';
 
 // ===== 定数 =====
-const API_KEY = '6d071ca4ccc3f7fbb6d0b7f73eeba99a';
 const STORAGE_KEY = 'travel_plans_v1';
 
 const CATEGORIES = {
@@ -476,7 +475,6 @@ function renderPlan() {
   document.getElementById('plan-title').textContent = plan.name;
   renderDayTabs(plan);
   renderSpotList(plan);
-  fetchWeather(plan);
 }
 
 // ===== 日付タブ =====
@@ -1885,96 +1883,6 @@ function downloadSampleCsv() {
 }
 
 // ===== 天気 =====
-const weatherCache = {};
-
-async function getWeatherByCity(city) {
-  if (weatherCache[city]) return weatherCache[city];
-
-  // まず都市名で直接取得を試みる
-  let res = await fetch(
-    `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric&lang=ja&cnt=40`
-  );
-
-  // 失敗した場合はNominatimで座標を取得して再試行（日本語名対応）
-  if (!res.ok) {
-    const geoRes  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`);
-    const geoData = await geoRes.json();
-    if (!geoData.length) throw new Error('not found');
-    const { lat, lon } = geoData[0];
-    res = await fetch(
-      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=ja&cnt=40`
-    );
-  }
-
-  if (!res.ok) throw new Error(res.status);
-  const data   = await res.json();
-  const byDate = {};
-  data.list.forEach(item => {
-    const [date, time] = item.dt_txt.split(' ');
-    const h = parseInt(time);
-    if (!byDate[date] || Math.abs(h - 12) < Math.abs(parseInt(byDate[date].dt_txt.split(' ')[1]) - 12)) {
-      byDate[date] = item;
-    }
-  });
-  weatherCache[city] = byDate;
-  return byDate;
-}
-
-async function fetchWeather(plan) {
-  const bar        = document.getElementById('plan-weather');
-  const hasAnyCity = plan.city || plan.days.some(d => d.city);
-  if (!hasAnyCity) { bar.innerHTML = ''; return; }
-  bar.innerHTML = '<div class="weather-loading">🌤️ 天気を取得中...</div>';
-
-  try {
-    const cities  = [...new Set(plan.days.map(d => d.city || plan.city).filter(Boolean))];
-    const results = {};
-    await Promise.all(cities.map(async c => { results[c] = await getWeatherByCity(c); }));
-
-    bar.innerHTML = '';
-    const wrap = document.createElement('div');
-    wrap.className = 'weather-days';
-
-    plan.days.forEach((day, i) => {
-      const city   = day.city || plan.city;
-      const byDate = city ? results[city] : null;
-      const fc     = byDate ? byDate[day.date] : null;
-      const div    = document.createElement('div');
-      div.className = 'weather-day' + (i === state.dayIndex ? ' active-day' : '');
-      div.onclick   = () => { state.dayIndex = i; renderDayTabs(plan); renderSpotList(plan); };
-      div.style.cursor = 'pointer';
-
-      if (fc) {
-        div.innerHTML = `
-          <div class="w-date">${fmtDate(day.date)}</div>
-          <img class="w-icon" src="https://openweathermap.org/img/wn/${fc.weather[0].icon}.png"
-            alt="${fc.weather[0].description}" title="${fc.weather[0].description}">
-          <div class="w-temp">${Math.round(fc.main.temp)}°C</div>
-          <div class="w-desc">${fc.weather[0].description}</div>
-        `;
-      } else {
-        div.innerHTML = `
-          <div class="w-date">${fmtDate(day.date)}</div>
-          <div class="w-icon" style="line-height:38px;font-size:24px">？</div>
-          <div class="w-temp">--°C</div>
-        `;
-      }
-      wrap.appendChild(div);
-    });
-    bar.appendChild(wrap);
-
-  } catch (err) {
-    bar.innerHTML = `<div class="weather-error">⚠️ 天気の取得に失敗 (${err.message}) — 都市名を英語で入力してみてください</div>`;
-  }
-
-  // 常に説明文を表示
-  const note = document.createElement('div');
-  note.className = 'weather-note';
-  note.textContent = '※ 天気予報は旅行5日前から表示されます。目的地は日本語で入力できます（例: 盛岡、弘前、仙台）';
-  bar.appendChild(note);
-}
-
-
 function fmtMin(min) {
   if (min < 60) return `${min}分`;
   const h = Math.floor(min / 60), m = min % 60;

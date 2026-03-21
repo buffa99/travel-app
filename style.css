@@ -132,38 +132,6 @@ body {
 .empty-icon { font-size: 64px; }
 .empty-state p { color: var(--text-sub); font-size: 16px; }
 
-/* ===== 天気バー ===== */
-.weather-bar {
-  background: linear-gradient(135deg, #1565C0, #1976D2);
-  color: white;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.weather-bar::-webkit-scrollbar { display: none; }
-.weather-days { display: flex; gap: 8px; padding: 8px 16px; }
-.weather-day {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 68px;
-  padding: 6px 8px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.15);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.weather-day.active-day { background: rgba(255,255,255,0.3); }
-.w-date  { font-size: 11px; opacity: 0.9; }
-.w-icon  { width: 38px; height: 38px; }
-.w-temp  { font-size: 14px; font-weight: 700; }
-.w-desc  { font-size: 10px; opacity: 0.85; text-align: center; }
-.weather-loading, .weather-error {
-  text-align: center; padding: 10px; font-size: 13px; opacity: 0.85;
-}
-.weather-note {
-  text-align: center; font-size: 11px; color: #888; padding: 4px 8px 8px;
-}
-
 /* ===== 日付タブ ===== */
 .day-tabs {
   display: flex;

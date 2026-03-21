@@ -1962,14 +1962,16 @@ async function fetchWeather(plan) {
       wrap.appendChild(div);
     });
     bar.appendChild(wrap);
-    const note = document.createElement('div');
-    note.className = 'weather-note';
-    note.textContent = '※ 天気予報は旅行5日前から表示されます。目的地は日本語で入力できます（例: 盛岡、弘前、仙台）';
-    bar.appendChild(note);
 
   } catch (err) {
     bar.innerHTML = `<div class="weather-error">⚠️ 天気の取得に失敗 (${err.message}) — 都市名を英語で入力してみてください</div>`;
   }
+
+  // 常に説明文を表示
+  const note = document.createElement('div');
+  note.className = 'weather-note';
+  note.textContent = '※ 天気予報は旅行5日前から表示されます。目的地は日本語で入力できます（例: 盛岡、弘前、仙台）';
+  bar.appendChild(note);
 }
 
 

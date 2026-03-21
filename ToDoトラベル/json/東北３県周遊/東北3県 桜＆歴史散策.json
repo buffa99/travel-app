@@ -1,0 +1,430 @@
+{
+  "id": "tohoku-3ken-2026",
+  "name": "東北3県 桜＆歴史散策",
+  "city": "東北",
+  "startDate": "2026-04-18",
+  "endDate": "2026-04-22",
+  "days": [
+    {
+      "id": "day1",
+      "date": "2026-04-18",
+      "city": "Sagamihara",
+      "spots": [
+        {
+          "id": "d1s1",
+          "completed": false,
+          "category": "transport",
+          "name": "橋本駅 出発",
+          "address": "橋本駅",
+          "time": "20:35",
+          "duration": 0,
+          "website": "",
+          "notes": ""
+        },
+        {
+          "id": "d1s2",
+          "completed": false,
+          "category": "transport",
+          "name": "バスタ新宿 到着",
+          "address": "バスタ新宿",
+          "time": "21:29",
+          "duration": 55,
+          "website": "",
+          "notes": "待機55分"
+        },
+        {
+          "id": "d1s3",
+          "completed": false,
+          "category": "transport",
+          "name": "バスタ新宿 発（夜行バス）",
+          "address": "バスタ新宿",
+          "time": "22:40",
+          "duration": 0,
+          "website": "",
+          "notes": "夜行バスで出発"
+        }
+      ]
+    },
+    {
+      "id": "day2",
+      "date": "2026-04-19",
+      "city": "Kakunodate",
+      "spots": [
+        {
+          "id": "d2s1",
+          "completed": false,
+          "category": "transport",
+          "name": "大曲駅東口 到着・レンタカー借受",
+          "address": "秋田県大仙市大曲大曲59 大曲駅東口",
+          "time": "07:40",
+          "duration": 60,
+          "website": "",
+          "notes": ""
+        },
+        {
+          "id": "d2s2",
+          "completed": false,
+          "category": "transport",
+          "name": "河川敷駐車場（桧木内川）",
+          "address": "秋田県仙北市角館町",
+          "time": "09:45",
+          "duration": 10,
+          "website": "",
+          "notes": "桜まつり期間中は無料・広い"
+        },
+        {
+          "id": "d2s3",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "武家屋敷通り散策",
+          "address": "秋田県仙北市角館町表町〜東勝楽丁",
+          "time": "09:55",
+          "duration": 80,
+          "website": "https://www.city.semboku.akita.jp/sightseeing/spot/04_samurai.html",
+          "notes": "石黒家・青柳家・黒板塀×シダレザクラ"
+        },
+        {
+          "id": "d2s4",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "桧木内川堤 桜並木",
+          "address": "秋田県仙北市角館町",
+          "time": "11:15",
+          "duration": 30,
+          "website": "",
+          "notes": "日本さくら名所100選・2kmの桜のトンネル"
+        },
+        {
+          "id": "d2s5",
+          "completed": false,
+          "category": "shopping",
+          "name": "安藤醸造 本店",
+          "address": "秋田県仙北市角館町下新町27",
+          "time": "11:45",
+          "duration": 20,
+          "website": "",
+          "notes": "レンガ蔵座敷見学・試食・土産"
+        },
+        {
+          "id": "d2s6",
+          "completed": false,
+          "category": "food",
+          "name": "昼食（角館市内）",
+          "address": "秋田県仙北市角館町",
+          "time": "12:00",
+          "duration": 75,
+          "website": "",
+          "notes": "きりたんぽ・稲庭うどん・比内地鶏など　要予約"
+        },
+        {
+          "id": "d2s7",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "たつこ像・浮木神社",
+          "address": "秋田県仙北市西木町西明寺字潟尻",
+          "time": "13:40",
+          "duration": 40,
+          "website": "",
+          "notes": "田沢湖のシンボル・縁結びパワースポット"
+        },
+        {
+          "id": "d2s8",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "御座石神社",
+          "address": "秋田県仙北市西木町桧木内相内潟1",
+          "time": "14:20",
+          "duration": 20,
+          "website": "",
+          "notes": "湖に面した赤い鳥居・たつこ姫伝説"
+        },
+        {
+          "id": "d2s9",
+          "completed": false,
+          "category": "food",
+          "name": "山のはちみつ屋",
+          "address": "秋田県仙北市田沢湖生保内字下高野",
+          "time": "14:40",
+          "duration": 35,
+          "website": "",
+          "notes": "300種以上のはちみつ試食・はちみつソフト"
+        },
+        {
+          "id": "d2s10",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "水沢温泉郷 ドライブ",
+          "address": "秋田県仙北市田沢湖生保内",
+          "time": "15:15",
+          "duration": 60,
+          "website": "",
+          "notes": "チェックインまで自由時間"
+        },
+        {
+          "id": "d2s11",
+          "completed": false,
+          "category": "hotel",
+          "name": "田沢湖水沢温泉郷 セルリアンリゾートAONI",
+          "address": "秋田県仙北市田沢湖生保内字下高野73-13",
+          "time": "17:15",
+          "duration": 0,
+          "website": "",
+          "notes": "チェックイン・夕食・温泉"
+        }
+      ]
+    },
+    {
+      "id": "day3",
+      "date": "2026-04-20",
+      "city": "Hirosaki",
+      "spots": [
+        {
+          "id": "d3s1",
+          "completed": false,
+          "category": "transport",
+          "name": "セルリアンリゾートAONI 出発",
+          "address": "秋田県仙北市田沢湖生保内字下高野73-13",
+          "time": "07:00",
+          "duration": 0,
+          "website": "",
+          "notes": "チェックアウト・出発（早めに）"
+        },
+        {
+          "id": "d3s2",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "岩木山神社",
+          "address": "青森県弘前市百沢字寺沢27",
+          "time": "09:00",
+          "duration": 50,
+          "website": "",
+          "notes": "創建1200年・国重文社殿群・二体の狛犬・三つ首龍手水舎"
+        },
+        {
+          "id": "d3s3",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "桜林公園",
+          "address": "青森県弘前市百沢",
+          "time": "09:55",
+          "duration": 20,
+          "website": "",
+          "notes": "1000本の桜越しに岩木山を望む穴場"
+        },
+        {
+          "id": "d3s4",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "岩木山 桜並木ドライブ",
+          "address": "青森県弘前市 県道3号線（百沢〜嶽エリア）",
+          "time": "10:20",
+          "duration": 40,
+          "website": "",
+          "notes": "総延長20km・6500本のオオヤマザクラ　世界一の桜並木"
+        },
+        {
+          "id": "d3s5",
+          "completed": false,
+          "category": "food",
+          "name": "ランチ（弘前市内）",
+          "address": "青森県弘前市",
+          "time": "11:30",
+          "duration": 70,
+          "website": "",
+          "notes": "アップルパイ・津軽そばなど"
+        },
+        {
+          "id": "d3s6",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "弘前公園 桜散策",
+          "address": "青森県弘前市下白銀町1 弘前公園",
+          "time": "13:00",
+          "duration": 300,
+          "website": "https://www.hirosakipark.jp/",
+          "notes": "2600本の桜・昼〜夕方・17時頃ライトアップ開始"
+        },
+        {
+          "id": "d3s7",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "🚣 弘前城 お堀クルーズ",
+          "address": "青森県弘前市下白銀町1 弘前公園",
+          "time": "18:15",
+          "duration": 40,
+          "website": "",
+          "notes": "夜桜×ライトアップ×水面反射　★予約済み"
+        },
+        {
+          "id": "d3s8",
+          "completed": false,
+          "category": "hotel",
+          "name": "天然温泉 岩木桜の湯 ドーミーイン弘前",
+          "address": "青森県弘前市本町71-1",
+          "time": "19:30",
+          "duration": 0,
+          "website": "https://www.hotespa.net/hotels/hirosaki/",
+          "notes": "予約番号: 2026031888104631 / 朝食付 / 禁煙ダブルルーム / ¥66,600（税込・返金不可）/ 事前決済済"
+        }
+      ]
+    },
+    {
+      "id": "day4",
+      "date": "2026-04-21",
+      "city": "Miyako",
+      "spots": [
+        {
+          "id": "d4s1",
+          "completed": false,
+          "category": "transport",
+          "name": "ドーミーイン弘前 出発",
+          "address": "青森県弘前市本町71-1",
+          "time": "08:30",
+          "duration": 0,
+          "website": "",
+          "notes": "チェックアウト・出発"
+        },
+        {
+          "id": "d4s2",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "龍泉洞",
+          "address": "岩手県岩泉町岩泉字神成1-1",
+          "time": "12:00",
+          "duration": 75,
+          "website": "https://www.iwaizumi-kanko.net/ryusendo/",
+          "notes": "日本三大鍾乳洞・ドラゴンブルーの地底湖　洞内10℃上着必須"
+        },
+        {
+          "id": "d4s3",
+          "completed": false,
+          "category": "food",
+          "name": "海鮮ランチ（宮古市内）",
+          "address": "岩手県宮古市",
+          "time": "13:15",
+          "duration": 60,
+          "website": "",
+          "notes": "瓶ドン・新鮮刺身・三陸の海の幸"
+        },
+        {
+          "id": "d4s4",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "浄土ヶ浜",
+          "address": "岩手県宮古市日立浜町32 浄土ヶ浜",
+          "time": "14:15",
+          "duration": 30,
+          "website": "https://jodogahama-vc.com/",
+          "notes": "白い流紋岩×青い海・日本百景"
+        },
+        {
+          "id": "d4s5",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "報恩寺・五百羅漢",
+          "address": "岩手県盛岡市名須川町31-5",
+          "time": "16:15",
+          "duration": 40,
+          "website": "",
+          "notes": "格式高い禅宗寺院・500体の羅漢像"
+        },
+        {
+          "id": "d4s6",
+          "completed": false,
+          "category": "hotel",
+          "name": "つなぎ温泉 愛真館",
+          "address": "岩手県盛岡市繋字湯館1-1",
+          "time": "18:00",
+          "duration": 0,
+          "website": "https://aishinkan.jp/",
+          "notes": "予約番号: RYa0mhs7m8 / TEL: 019-689-2111 / しまおか みき 様 / 本館和室8〜12畳 / 33市町村の食と酒＆ライブキッチン/ドリンクインクルーシブ"
+        }
+      ]
+    },
+    {
+      "id": "day5",
+      "date": "2026-04-22",
+      "city": "Hiraizumi",
+      "spots": [
+        {
+          "id": "d5s1",
+          "completed": false,
+          "category": "transport",
+          "name": "つなぎ温泉 愛真館 出発",
+          "address": "岩手県盛岡市繋字湯館1-1",
+          "time": "09:30",
+          "duration": 0,
+          "website": "",
+          "notes": "朝食・チェックアウト"
+        },
+        {
+          "id": "d5s2",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "桜山神社・城下町散策",
+          "address": "岩手県盛岡市内丸1-42",
+          "time": "10:00",
+          "duration": 60,
+          "website": "",
+          "notes": "南部藩総鎮守・烏帽子岩・城下町・南部鉄器老舗"
+        },
+        {
+          "id": "d5s3",
+          "completed": false,
+          "category": "food",
+          "name": "ランチ（盛岡市内）",
+          "address": "岩手県盛岡市",
+          "time": "11:00",
+          "duration": 60,
+          "website": "",
+          "notes": "わんこそば・盛岡冷麺・じゃじゃ麺　盛岡三大麺"
+        },
+        {
+          "id": "d5s4",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "中尊寺（金色堂）",
+          "address": "岩手県西磐井郡平泉町平泉衣関202",
+          "time": "13:30",
+          "duration": 120,
+          "website": "https://www.chusonji.or.jp/",
+          "notes": "世界遺産・月見坂参道・本堂・金色堂・讃衡蔵"
+        },
+        {
+          "id": "d5s5",
+          "completed": false,
+          "category": "sightseeing",
+          "name": "達谷窟毘沙門堂",
+          "address": "岩手県西磐井郡平泉町平泉北沢16",
+          "time": "15:30",
+          "duration": 40,
+          "website": "",
+          "notes": "坂上田村麻呂創建・懸崖造り日本一・岩面大仏"
+        },
+        {
+          "id": "d5s6",
+          "completed": false,
+          "category": "transport",
+          "name": "一ノ関駅 レンタカー返却・土産",
+          "address": "岩手県一関市",
+          "time": "16:15",
+          "duration": 90,
+          "website": "",
+          "notes": "土産・軽食など"
+        },
+        {
+          "id": "d5s7",
+          "completed": false,
+          "category": "transport",
+          "name": "一ノ関駅 発（新幹線やまびこ号）",
+          "address": "岩手県一関市",
+          "time": "17:48",
+          "duration": 0,
+          "website": "",
+          "notes": "帰宅"
+        }
+      ]
+    }
+  ],
+  "routes": {}
+}

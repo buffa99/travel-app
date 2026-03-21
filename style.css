@@ -160,6 +160,9 @@ body {
 .weather-loading, .weather-error {
   text-align: center; padding: 10px; font-size: 13px; opacity: 0.85;
 }
+.weather-note {
+  text-align: center; font-size: 11px; color: #888; padding: 4px 8px 8px;
+}
 
 /* ===== 日付タブ ===== */
 .day-tabs {

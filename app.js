@@ -515,7 +515,7 @@ function editDayCity() {
   const plan    = getCurrentPlan();
   const day     = plan.days[state.dayIndex];
   const current = day.city || plan.city || '';
-  const input   = prompt('この日の目的地を入力（日本語OK）\n例: 盛岡　弘前　仙北\n空欄にするとプラン共通の設定を使用', current);
+  const input   = prompt('この日の目的地を入力\n\n【入力例】\n　盛岡　弘前　仙台　京都　など日本語OK\n\n【天気予報について】\n　旅行5日前から自動で天気が表示されます\n\n空欄にするとプラン共通の設定を使用', current);
   if (input === null) return;
   day.city = input.trim();
   savePlans();
@@ -1962,6 +1962,10 @@ async function fetchWeather(plan) {
       wrap.appendChild(div);
     });
     bar.appendChild(wrap);
+    const note = document.createElement('div');
+    note.className = 'weather-note';
+    note.textContent = '※ 天気予報は旅行5日前から表示されます。目的地は日本語で入力できます（例: 盛岡、弘前、仙台）';
+    bar.appendChild(note);
 
   } catch (err) {
     bar.innerHTML = `<div class="weather-error">⚠️ 天気の取得に失敗 (${err.message}) — 都市名を英語で入力してみてください</div>`;

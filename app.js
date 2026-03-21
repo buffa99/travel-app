@@ -374,6 +374,7 @@ function loadPlans() {
     plans = [DEFAULT_PLAN];
     savePlans();
   }
+  updateStorageMeter();
 }
 function savePlans() {
   try {
@@ -384,6 +385,109 @@ function savePlans() {
     } else {
       alert('⚠️ データの保存に失敗しました: ' + e.message);
     }
+  }
+  updateStorageMeter();
+}
+
+function updateStorageMeter() {
+  const wrap = document.getElementById('storage-meter-wrap');
+  if (!wrap) return;
+
+  // localStorage の使用バイト数を計算（UTF-16: 1文字 = 2バイト）
+  let usedBytes = 0;
+  for (const key in localStorage) {
+    if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+      usedBytes += (key.length + localStorage[key].length) * 2;
+    }
+  }
+
+  const LIMIT_BYTES = 5 * 1024 * 1024; // 5MB
+  const pct = Math.min((usedBytes / LIMIT_BYTES) * 100, 100);
+  const usedMB = (usedBytes / (1024 * 1024)).toFixed(2);
+
+  const bar   = document.getElementById('storage-meter-bar');
+  const label = document.getElementById('storage-meter-label');
+
+  bar.style.width = pct + '%';
+  bar.style.background = pct < 60 ? '#4caf50' : pct < 85 ? '#ff9800' : '#f44336';
+  label.textContent = `${usedMB} MB / 5 MB`;
+
+  // 90%超えたら警告を表示
+  wrap.title = pct >= 90
+    ? '⚠️ 容量が残りわずかです。画像を削除することをお勧めします。'
+    : `localStorage 使用量: ${pct.toFixed(1)}%`;
+}
+
+// ===== IndexedDB 画像ストレージ =====
+let _imgDB = null;
+
+function openImageDB() {
+  if (_imgDB) return Promise.resolve(_imgDB);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('travel_images_v1', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('images');
+    req.onsuccess = e => { _imgDB = e.target.result; resolve(_imgDB); };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveImage(key, dataUrl) {
+  const db = await openImageDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('images', 'readwrite');
+    tx.objectStore('images').put(dataUrl, key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function loadImage(key) {
+  const db = await openImageDB();
+  return new Promise(resolve => {
+    const req = db.transaction('images').objectStore('images').get(key);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function deleteImage(key) {
+  const db = await openImageDB();
+  return new Promise(resolve => {
+    const tx = db.transaction('images', 'readwrite');
+    tx.objectStore('images').delete(key);
+    tx.oncomplete = resolve;
+    tx.onerror = resolve;
+  });
+}
+
+// localStorage内のdata:画像をすべてIndexedDBに移行（初回のみ）
+async function migrateImagesToIndexedDB() {
+  let migrated = false;
+  for (const plan of plans) {
+    for (const day of plan.days || []) {
+      for (const spot of day.spots || []) {
+        if (spot.photo && spot.photo.startsWith('data:')) {
+          const compressed = await compressImage(spot.photo);
+          await saveImage('spot:' + spot.id, compressed);
+          spot.photo = 'idb';
+          migrated = true;
+        }
+      }
+    }
+    for (const key of Object.keys(plan.routes || {})) {
+      const route = plan.routes[key];
+      if (route.image && route.image.startsWith('data:')) {
+        const compressed = await compressImage(route.image);
+        await saveImage('route:' + plan.id + ':' + key, compressed);
+        route.image = 'idb';
+        migrated = true;
+      }
+    }
+  }
+  if (migrated) {
+    savePlans();
+    updateStorageMeter();
+    console.log('[Migration] 画像をIndexedDBへ移行しました');
   }
 }
 
@@ -995,13 +1099,20 @@ function showSpotDetail(spotId) {
   setRow('detail-notes',   spot.notes   ? `📝 ${esc(spot.notes)}`   : null);
 
   const photoEl = document.getElementById('detail-photo');
-  if (spot.photo) {
+  photoEl.style.display = 'none';
+  photoEl.onclick = null;
+  if (spot.photo === 'idb') {
+    loadImage('spot:' + spot.id).then(dataUrl => {
+      if (dataUrl) {
+        photoEl.src = dataUrl;
+        photoEl.style.display = 'block';
+        photoEl.onclick = () => openLightbox(dataUrl);
+      }
+    });
+  } else if (spot.photo) {
     photoEl.src = spot.photo;
     photoEl.style.display = 'block';
     photoEl.onclick = () => openLightbox(spot.photo);
-  } else {
-    photoEl.style.display = 'none';
-    photoEl.onclick = null;
   }
 
   const dest = encodeURIComponent(spot.address || spot.name);
@@ -1039,7 +1150,11 @@ function editCurrentSpot() {
   document.getElementById('spot-time').value     = spot.time     || '';
   document.getElementById('spot-duration').value = spot.duration || '';
   document.getElementById('spot-notes').value    = spot.notes    || '';
-  setSpotPhotoPreview(spot.photo || '');
+  if (spot.photo === 'idb') {
+    loadImage('spot:' + spot.id).then(dataUrl => setSpotPhotoPreview(dataUrl || ''));
+  } else {
+    setSpotPhotoPreview(spot.photo || '');
+  }
   refreshCatBtns();
   attachSpotPasteHandler();
   showModal('modal-add-spot');
@@ -1049,6 +1164,8 @@ function deleteCurrentSpot() {
   if (!confirm('このスポットを削除しますか？')) return;
   const plan = getCurrentPlan();
   const day  = plan.days[state.dayIndex];
+  const spot = day.spots.find(s => s.id === state.spotId);
+  if (spot?.photo === 'idb') deleteImage('spot:' + spot.id);
   day.spots  = day.spots.filter(s => s.id !== state.spotId);
   savePlans();
   closeModal('modal-spot-detail');
@@ -1129,7 +1246,7 @@ function attachSpotPasteHandler() {
   document.addEventListener('paste', _spotPasteHandler);
 }
 
-function saveSpot() {
+async function saveSpot() {
   const name = document.getElementById('spot-name').value.trim();
   if (!name) { alert('スポット名を入力してください'); return; }
 
@@ -1137,13 +1254,24 @@ function saveSpot() {
   const day  = plan.days[state.dayIndex];
   const existingSpot = state.editingSpot && state.spotId
     ? day.spots.find(s => s.id === state.spotId) : null;
+
+  // 写真の扱い：data: → IndexedDBへ、'' でクリア、'idb' はそのまま引き継ぐ
+  let photoVal;
+  if (state.editPhotoData && state.editPhotoData.startsWith('data:')) {
+    photoVal = 'idb';
+  } else if (state.editPhotoData === '' && existingSpot?.photo === 'idb') {
+    photoVal = '';
+  } else {
+    photoVal = state.editPhotoData ?? existingSpot?.photo ?? '';
+  }
+
   const data = {
     name,
     address:  document.getElementById('spot-address').value.trim(),
     time:     document.getElementById('spot-time').value,
     duration: parseInt(document.getElementById('spot-duration').value) || 0,
     website:  existingSpot?.website || '',
-    photo:    state.editPhotoData ?? existingSpot?.photo ?? '',
+    photo:    photoVal,
     notes:    document.getElementById('spot-notes').value.trim(),
     category: state.selectedCat,
   };
@@ -1156,6 +1284,13 @@ function saveSpot() {
     const newSpot = { id: uid(), completed: false, ...data };
     day.spots.push(newSpot);
     savedId = newSpot.id;
+  }
+
+  // IndexedDBへ画像を保存 / 削除
+  if (state.editPhotoData && state.editPhotoData.startsWith('data:')) {
+    await saveImage('spot:' + savedId, state.editPhotoData);
+  } else if (state.editPhotoData === '' && existingSpot?.photo === 'idb') {
+    await deleteImage('spot:' + savedId);
   }
 
   savePlans();
@@ -1993,10 +2128,19 @@ function renderRouteMemo(section, plan, key) {
     summary.className = 'route-memo-summary';
     if (meta.image) {
       const img = document.createElement('img');
-      img.src = meta.image;
       img.className = 'route-memo-thumb';
       img.title = 'タップで拡大 / 長押しで編集';
-      img.addEventListener('click', () => openLightbox(meta.image));
+      if (meta.image === 'idb') {
+        loadImage('route:' + plan.id + ':' + key).then(dataUrl => {
+          if (dataUrl) {
+            img.src = dataUrl;
+            img.addEventListener('click', () => openLightbox(dataUrl));
+          }
+        });
+      } else {
+        img.src = meta.image;
+        img.addEventListener('click', () => openLightbox(meta.image));
+      }
       summary.appendChild(img);
     }
     if (meta.text) {
@@ -2045,6 +2189,7 @@ function openRouteMemoEdit(section, plan, key) {
   clearBtn.addEventListener('click', () => {
     if (!confirm('メモと画像を削除しますか？')) return;
     section.innerHTML = '';   // 即座にクリア（stale参照対策）
+    if (plan.routes?.[key]?.image === 'idb') deleteImage('route:' + plan.id + ':' + key);
     if (plan.routes) delete plan.routes[key];
     savePlans();
     removePaste();
@@ -2060,9 +2205,17 @@ function openRouteMemoEdit(section, plan, key) {
   const saveBtn = document.createElement('button');
   saveBtn.textContent = '保存';
   saveBtn.className = 'btn-route-memo-save';
-  saveBtn.addEventListener('click', () => {
+  saveBtn.addEventListener('click', async () => {
     if (!plan.routes) plan.routes = {};
-    plan.routes[key] = { ...plan.routes[key], text: textarea.value.trim(), image: imgData || '' };
+    const routeIdbKey = 'route:' + plan.id + ':' + key;
+    let imageVal = imgData || '';
+    if (imgData && imgData.startsWith('data:')) {
+      await saveImage(routeIdbKey, imgData);
+      imageVal = 'idb';
+    } else if (!imgData && plan.routes[key]?.image === 'idb') {
+      await deleteImage(routeIdbKey);
+    }
+    plan.routes[key] = { ...plan.routes[key], text: textarea.value.trim(), image: imageVal };
     savePlans();
     removePaste();
     renderRouteMemo(section, plan, key);
@@ -2086,7 +2239,7 @@ function openRouteMemoEdit(section, plan, key) {
   panel.appendChild(textarea);
 
   // 画像エリア
-  let imgData = meta.image || null;
+  let imgData = (meta.image && meta.image !== 'idb') ? meta.image : null;
   const imgZone = document.createElement('div');
   imgZone.className = 'route-memo-imgzone';
   imgZone.title = 'タップして画像を選択、またはCtrl+Vでペースト';
@@ -2104,6 +2257,18 @@ function openRouteMemoEdit(section, plan, key) {
   imgPlaceholder.className = 'route-memo-imgplaceholder';
   imgPlaceholder.innerHTML = '📸 Ctrl+V でペースト<br>またはタップして画像を選択';
   imgPlaceholder.style.display = imgData ? 'none' : 'flex';
+
+  // IndexedDBから画像を非同期読み込み
+  if (meta.image === 'idb') {
+    loadImage('route:' + plan.id + ':' + key).then(dataUrl => {
+      if (dataUrl) {
+        imgData = dataUrl;
+        imgPreview.src = dataUrl;
+        imgPreview.style.display = 'block';
+        imgPlaceholder.style.display = 'none';
+      }
+    });
+  }
 
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
@@ -2167,7 +2332,8 @@ function closeLightbox() {
   document.getElementById('lightbox').style.display = 'none';
 }
 
-// ===== 既存画像の一括圧縮（初回起動時に容量を節約） =====
+// ===== 既存画像の一括圧縮（IndexedDB移行前の古いdata:が残っている場合の保険） =====
+// ※ migrateImagesToIndexedDB() が完了すれば data: は残らないため実質スキップされる
 async function compressAllStoredImages() {
   let changed = false;
   for (const plan of plans) {
@@ -2175,18 +2341,15 @@ async function compressAllStoredImages() {
     for (const key of Object.keys(plan.routes)) {
       const route = plan.routes[key];
       if (route.image && route.image.startsWith('data:image/') && !route.image.startsWith('data:image/jpeg')) {
-        // PNG等の未圧縮画像のみ圧縮対象（JPEGは既に圧縮済みとみなす）
         route.image = await compressImage(route.image);
         changed = true;
       } else if (route.image && route.image.startsWith('data:image/jpeg')) {
-        // JPEGでも大きい場合（150KB超）は再圧縮
         if (route.image.length > 150000) {
           route.image = await compressImage(route.image, 1000, 0.7);
           changed = true;
         }
       }
     }
-    // スポット写真も同様に圧縮
     for (const day of plan.days || []) {
       for (const spot of day.spots || []) {
         if (spot.photo && spot.photo.startsWith('data:image/') && !spot.photo.startsWith('data:image/jpeg')) {
@@ -2206,8 +2369,8 @@ async function compressAllStoredImages() {
 document.addEventListener('DOMContentLoaded', () => {
   loadPlans();
   renderHome();
-  // バックグラウンドで既存画像を圧縮（容量節約）
-  compressAllStoredImages();
+  // バックグラウンドで既存画像をIndexedDBへ移行（初回のみ実行、以降はdata:がないためスキップ）
+  migrateImagesToIndexedDB();
 
   // スポット写真：ドラッグ&ドロップ
   const photoZone = document.getElementById('spot-photo-zone');

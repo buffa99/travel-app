@@ -18,9 +18,16 @@
   <div id="view-home" class="view active">
     <header class="header">
       <h1>✈️ 旅プラン</h1>
+      <a href="manual.pdf" target="_blank" class="btn-icon" title="使用マニュアル（PDF）">📖</a>
       <button id="btn-import-top" class="btn-icon" title="インポート">📥</button>
       <button id="btn-new-plan" class="btn-icon" title="新しいプラン">＋</button>
     </header>
+    <div id="storage-meter-wrap">
+      <div id="storage-meter-bar-bg">
+        <div id="storage-meter-bar"></div>
+      </div>
+      <span id="storage-meter-label">計算中…</span>
+    </div>
     <div id="plan-list" class="plan-list"></div>
     <div id="empty-home" class="empty-state" style="display:none">
       <div class="empty-icon">🗺️</div>

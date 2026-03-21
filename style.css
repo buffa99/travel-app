@@ -813,6 +813,18 @@ a.btn-icon { text-decoration: none; }
   cursor: pointer;
 }
 .danger { color: var(--danger) !important; }
+.btn-danger {
+  flex: 1;
+  background: #c62828;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-danger:hover { background: #b71c1c; }
 
 /* ===== カテゴリ ===== */
 .category-picker { display: flex; flex-wrap: wrap; gap: 8px; }

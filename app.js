@@ -1650,6 +1650,31 @@ async function exportPlan() {
 }
 
 // ===== 共有リンク =====
+// gzip圧縮してURLセーフなbase64に変換
+async function compressToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  const stream = new CompressionStream('gzip');
+  const writer = stream.writable.getWriter();
+  writer.write(bytes);
+  writer.close();
+  const buf = await new Response(stream.readable).arrayBuffer();
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+// URLセーフbase64からgzip展開
+async function decompressFromBase64(b64) {
+  const std = b64.replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(std);
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  const stream = new DecompressionStream('gzip');
+  const writer = stream.writable.getWriter();
+  writer.write(bytes);
+  writer.close();
+  const buf = await new Response(stream.readable).arrayBuffer();
+  return new TextDecoder().decode(buf);
+}
+
 async function shareLink() {
   const plan = getCurrentPlan();
   // 画像は受信側に引き継げないので除外したコピーを作る
@@ -1663,8 +1688,8 @@ async function shareLink() {
     if (planCopy.routes[key].image) planCopy.routes[key].image = null;
   }
 
-  const json    = JSON.stringify(planCopy);
-  const encoded = btoa(unescape(encodeURIComponent(json)));
+  const json     = JSON.stringify(planCopy);
+  const encoded  = await compressToBase64(json);
   const shareUrl = location.origin + location.pathname + '#share=' + encoded;
 
   if (navigator.share) {
@@ -2450,13 +2475,13 @@ async function compressAllStoredImages() {
 }
 
 // ===== 共有リンクからのインポート =====
-function tryImportFromHash() {
+async function tryImportFromHash() {
   const hash = location.hash;
   if (!hash.startsWith('#share=')) return;
 
   try {
     const encoded = hash.slice('#share='.length);
-    const json    = decodeURIComponent(escape(atob(encoded)));
+    const json    = await decompressFromBase64(encoded);
     const plan    = JSON.parse(json);
     if (!plan.id || !plan.name || !Array.isArray(plan.days)) throw new Error();
 
@@ -2474,7 +2499,7 @@ function tryImportFromHash() {
     else plans.push(plan);
     savePlans();
 
-    history.replaceState(null, '', location.pathname); // URLからハッシュを除去
+    history.replaceState(null, '', location.pathname);
     alert('✅ インポートしました！');
     openPlan(plan.id);
   } catch {

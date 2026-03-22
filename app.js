@@ -370,10 +370,11 @@ function compressImage(dataURL, maxWidth = 1200, quality = 0.75) {
 function loadPlans() {
   try { plans = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch { plans = []; }
-  if (plans.length === 0) {
+  if (plans.length === 0 && !sessionStorage.getItem('just_reset')) {
     plans = [DEFAULT_PLAN];
     savePlans();
   }
+  sessionStorage.removeItem('just_reset');
   updateStorageMeter();
 }
 function savePlans() {
@@ -514,6 +515,7 @@ async function executeReset() {
     return;
   }
   // localStorage を全消去
+  sessionStorage.setItem('just_reset', '1');
   localStorage.clear();
   // IndexedDB を削除
   try {

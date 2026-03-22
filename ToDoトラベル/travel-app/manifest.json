@@ -1,0 +1,10 @@
+{
+  "name": "旅プラン",
+  "short_name": "旅プラン",
+  "description": "旅行スケジュール管理アプリ",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F0F4F8",
+  "theme_color": "#1976D2",
+  "orientation": "portrait"
+}

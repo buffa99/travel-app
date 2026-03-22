@@ -1,0 +1,59 @@
+{
+  "_type": "travel-app-day",
+  "planName": "東北3県 桜＆歴史散策",
+  "planId": "tohoku-3ken-2026",
+  "day": {
+    "date": "2026-04-18",
+    "city": "Sagamihara",
+    "spots": [
+      {
+        "id": "mmzqhjafmtl38ppw51g",
+        "completed": false,
+        "name": "下九沢団地バス停",
+        "address": "",
+        "time": "19:30",
+        "duration": 0,
+        "website": "",
+        "photo": "",
+        "notes": "",
+        "category": "sightseeing"
+      },
+      {
+        "id": "d1s1",
+        "completed": false,
+        "category": "transport",
+        "name": "橋本駅",
+        "address": "橋本駅",
+        "time": "19:45",
+        "duration": 9,
+        "website": "",
+        "notes": "",
+        "photo": ""
+      },
+      {
+        "id": "mmzrvil1pyz5d4qdsv",
+        "completed": false,
+        "name": "新宿駅",
+        "address": "",
+        "time": "20:39",
+        "duration": 0,
+        "website": "",
+        "photo": "",
+        "notes": "",
+        "category": "sightseeing"
+      },
+      {
+        "id": "d1s3",
+        "completed": false,
+        "category": "transport",
+        "name": "バスタ新宿 発（夜行バス）",
+        "address": "バスタ新宿",
+        "time": "20:44",
+        "duration": 116,
+        "website": "",
+        "notes": "夜行バスで出発",
+        "photo": ""
+      }
+    ]
+  }
+}

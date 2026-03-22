@@ -1650,31 +1650,6 @@ async function exportPlan() {
 }
 
 // ===== 共有リンク =====
-// gzip圧縮してURLセーフなbase64に変換
-async function compressToBase64(str) {
-  const bytes = new TextEncoder().encode(str);
-  const stream = new CompressionStream('gzip');
-  const writer = stream.writable.getWriter();
-  writer.write(bytes);
-  writer.close();
-  const buf = await new Response(stream.readable).arrayBuffer();
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-}
-
-// URLセーフbase64からgzip展開
-async function decompressFromBase64(b64) {
-  const std = b64.replace(/-/g, '+').replace(/_/g, '/');
-  const bin = atob(std);
-  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
-  const stream = new DecompressionStream('gzip');
-  const writer = stream.writable.getWriter();
-  writer.write(bytes);
-  writer.close();
-  const buf = await new Response(stream.readable).arrayBuffer();
-  return new TextDecoder().decode(buf);
-}
-
 async function shareLink() {
   const plan = getCurrentPlan();
   // 画像は受信側に引き継げないので除外したコピーを作る
@@ -1688,9 +1663,24 @@ async function shareLink() {
     if (planCopy.routes[key].image) planCopy.routes[key].image = null;
   }
 
-  const json     = JSON.stringify(planCopy);
-  const encoded  = await compressToBase64(json);
-  const shareUrl = location.origin + location.pathname + '#share=' + encoded;
+  // jsonblob.com にデータを保存して短いIDを取得
+  let shareUrl;
+  try {
+    const res = await fetch('https://jsonblob.com/api/jsonBlob', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(planCopy),
+    });
+    if (!res.ok) throw new Error('upload failed');
+    // Location ヘッダ例: https://jsonblob.com/api/jsonBlob/abc123
+    const locationHeader = res.headers.get('Location') || '';
+    const blobId = locationHeader.split('/').pop();
+    if (!blobId) throw new Error('no blob id');
+    shareUrl = window.location.origin + window.location.pathname + '#blob=' + blobId;
+  } catch {
+    alert('⚠️ リンクの作成に失敗しました。\nインターネット接続を確認してください。');
+    return;
+  }
 
   if (navigator.share) {
     try {
@@ -1701,7 +1691,6 @@ async function shareLink() {
     }
   }
 
-  // フォールバック：クリップボードにコピー
   try {
     await navigator.clipboard.writeText(shareUrl);
     alert('✅ リンクをコピーしました！\nLINEに貼り付けて送ってください。');
@@ -2476,13 +2465,18 @@ async function compressAllStoredImages() {
 
 // ===== 共有リンクからのインポート =====
 async function tryImportFromHash() {
-  const hash = location.hash;
-  if (!hash.startsWith('#share=')) return;
+  const hash = window.location.hash;
+  if (!hash.startsWith('#blob=')) return;
+
+  const blobId = hash.slice('#blob='.length);
+  history.replaceState(null, '', window.location.pathname);
 
   try {
-    const encoded = hash.slice('#share='.length);
-    const json    = await decompressFromBase64(encoded);
-    const plan    = JSON.parse(json);
+    const res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
+      headers: { 'Accept': 'application/json' },
+    });
+    if (!res.ok) throw new Error('fetch failed');
+    const plan = await res.json();
     if (!plan.id || !plan.name || !Array.isArray(plan.days)) throw new Error();
 
     const existing = plans.findIndex(p => p.id === plan.id);
@@ -2490,21 +2484,16 @@ async function tryImportFromHash() {
       ? `「${plan.name}」は既にあります。上書きしますか？`
       : `「${plan.name}」を受け取りました。インポートしますか？`;
 
-    if (!confirm(msg)) {
-      history.replaceState(null, '', location.pathname);
-      return;
-    }
+    if (!confirm(msg)) return;
 
     if (existing >= 0) plans[existing] = plan;
     else plans.push(plan);
     savePlans();
 
-    history.replaceState(null, '', location.pathname);
     alert('✅ インポートしました！');
     openPlan(plan.id);
   } catch {
-    alert('⚠️ リンクからのインポートに失敗しました。');
-    history.replaceState(null, '', location.pathname);
+    alert('⚠️ リンクからのインポートに失敗しました。\nリンクの有効期限が切れているかもしれません。');
   }
 }
 

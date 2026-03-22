@@ -370,11 +370,10 @@ function compressImage(dataURL, maxWidth = 1200, quality = 0.75) {
 function loadPlans() {
   try { plans = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch { plans = []; }
-  if (plans.length === 0 && !sessionStorage.getItem('just_reset')) {
+  if (plans.length === 0) {
     plans = [DEFAULT_PLAN];
     savePlans();
   }
-  sessionStorage.removeItem('just_reset');
   updateStorageMeter();
 }
 function savePlans() {
@@ -515,7 +514,6 @@ async function executeReset() {
     return;
   }
   // localStorage を全消去
-  sessionStorage.setItem('just_reset', '1');
   localStorage.clear();
   // IndexedDB を削除
   try {
@@ -526,8 +524,10 @@ async function executeReset() {
       req.onerror = reject;
     });
   } catch (e) { /* 失敗しても続行 */ }
-  // リロードして初期状態に戻す
-  location.reload();
+  // リロードせずメモリ上でリセット→ホームへ
+  plans = [];
+  closeModal('modal-reset');
+  goHome();
 }
 
 // ===== ナビゲーション =====

@@ -67,7 +67,7 @@
           <div class="step-num">①</div>
           <div class="step-body">
             <strong>URLリンクをLINEで送る</strong>
-            <p>受け取り側はURLをタップするだけで自動インポート<br><small>※写真は含まれません　初回のみGitHubトークン設定が必要</small></p>
+            <p>受け取り側はURLをタップするだけで自動インポート<br><small>※写真は含まれません</small></p>
             <button class="btn-primary btn-share-main" onclick="shareLink()">🔗 URLリンクで送る</button>
           </div>
         </div>
@@ -193,25 +193,6 @@
   </div>
 </div>
 
-<!-- GitHub トークン設定 -->
-<div id="modal-gh-token" class="modal-overlay" style="display:none">
-  <div class="modal">
-    <h3>🔑 初回設定（1回だけ）</h3>
-    <p style="font-size:14px;line-height:1.7;margin:8px 0">GitHubのトークンが必要です。<br>お持ちでない方は下の手順で取得できます。</p>
-    <div class="gh-token-steps">
-      <p>① <a href="https://github.com/settings/tokens/new?scopes=gist&description=ToDoTravel" target="_blank" style="color:var(--primary)">こちらをタップ → GitHubにログイン</a></p>
-      <p>② 「Generate token」ボタンを押す</p>
-      <p>③ 表示されたトークンをコピー</p>
-      <p>④ 下に貼り付けて「保存」</p>
-    </div>
-    <input type="text" id="gh-token-input" placeholder="ghp_xxxxxxxxxxxx" style="font-family:monospace;font-size:13px">
-    <p id="gh-token-error" style="color:#c62828;font-size:13px;display:none">トークンを入力してください</p>
-    <div class="modal-buttons">
-      <button class="btn-secondary" onclick="closeModal('modal-gh-token')">キャンセル</button>
-      <button class="btn-primary" onclick="saveGhToken()">保存して送る</button>
-    </div>
-  </div>
-</div>
 
 <!-- プランメニュー -->
 <div id="modal-plan-menu" class="modal-overlay" style="display:none">

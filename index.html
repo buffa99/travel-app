@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1976D2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="旅プラン">
+  <link rel="manifest" href="manifest.json">
+  <title>旅プラン ✈️</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== ホーム ===== -->
+  <div id="view-home" class="view active">
+    <header class="header">
+      <h1>✈️ ToDo-Travel</h1>
+      <a href="manual.pdf" target="_blank" class="btn-icon" title="使用マニュアル（PDF）">📖</a>
+      <button id="btn-import-top" class="btn-icon" title="インポート">📥</button>
+      <button class="btn-icon" title="全データを削除" onclick="showResetStep1()">🗑️</button>
+      <button id="btn-new-plan" class="btn-icon" title="新しいプラン">＋</button>
+    </header>
+    <div id="storage-meter-wrap">
+      <div id="storage-meter-bar-bg">
+        <div id="storage-meter-bar"></div>
+      </div>
+      <span id="storage-meter-label">計算中…</span>
+    </div>
+    <div id="plan-list" class="plan-list"></div>
+    <div id="empty-home" class="empty-state" style="display:none">
+      <div class="empty-icon">🗺️</div>
+      <p>旅行プランがまだありません</p>
+      <button class="btn-primary" onclick="showNewPlanModal()">最初のプランを作成</button>
+    </div>
+  </div>
+
+  <!-- ===== プラン詳細 ===== -->
+  <div id="view-plan" class="view">
+    <header class="header">
+      <button class="btn-back" onclick="goHome()">←</button>
+      <h2 id="plan-title">プラン名</h2>
+      <button class="btn-icon" onclick="printDayAsPdf()" title="PDFで印刷">🖨️</button>
+      <button class="btn-icon" onclick="exportPlan()" title="JSONで保存">💾</button>
+      <button class="btn-icon" onclick="refreshAllTimes()" title="時刻を一括更新">🔄</button>
+      <button class="btn-icon" onclick="showModal('modal-plan-menu')">⋮</button>
+    </header>
+    <div id="day-tabs" class="day-tabs"></div>
+    <div id="day-city-bar" class="day-city-bar" onclick="editDayCity()"></div>
+    <div id="spot-list" class="spot-list"></div>
+    <button class="fab" onclick="showAddSpotModal()">＋</button>
+  </div>
+
+  <!-- ===== 共有 ===== -->
+  <div id="view-share" class="view">
+    <header class="header">
+      <button class="btn-back" onclick="showView('view-plan')">←</button>
+      <h2>プランを共有</h2>
+    </header>
+    <div class="share-container">
+      <div id="qr-container"></div>
+      <p class="share-hint">奥様のスマホでQRコードを読み取るとインポートできます</p>
+      <div class="share-buttons">
+        <button class="btn-primary" onclick="shareLink()">🔗 リンクをLINEで送る</button>
+        <button class="btn-secondary" onclick="exportPlan()">📤 ファイルとして保存（LINE等で送る）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== インポート ===== -->
+  <div id="view-import" class="view">
+    <header class="header">
+      <button class="btn-back" onclick="goHome()">←</button>
+      <h2>プランをインポート</h2>
+    </header>
+    <div class="import-container">
+      <div class="import-options">
+
+        <!-- Excel / CSV -->
+        <div class="import-option">
+          <div class="import-icon">📊</div>
+          <h3>ExcelやCSVから読み込む</h3>
+          <p>.xlsx（Excel）または .csv ファイルでスポットを一括追加できます</p>
+          <input type="file" id="import-excel-file" accept=".xlsx,.xls,.csv,.tsv" onchange="importFromExcelFile(event)">
+          <label for="import-excel-file" class="btn-primary">Excelファイルを選択</label>
+          <button class="btn-sample-dl" onclick="downloadSampleCsv()">📥 サンプルCSVをダウンロード</button>
+          <p class="import-hint">列名の例：日付、スポット名、カテゴリ、時刻、滞在時間、住所、メモ</p>
+        </div>
+
+        <!-- JSON (既存) -->
+        <div class="import-option">
+          <div class="import-icon">📁</div>
+          <h3>友人・家族からプランを受け取る</h3>
+          <p>LINEやメールで送られてきた <strong>.json</strong> ファイルを選択してください</p>
+          <p class="import-hint">① 送り主が 💾 ボタンでLINEに共有<br>② このボタンで受け取ったファイルを選択</p>
+          <input type="file" id="import-file" accept=".json" onchange="importFromFile(event)">
+          <label for="import-file" class="btn-primary">📂 JSONファイルを選択</label>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== モーダル群 ===== -->
+
+<!-- 全データ削除 -->
+<div id="modal-reset" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <!-- ステップ1: 確認 -->
+    <div id="reset-step1">
+      <h3 style="color:#c62828">⚠️ 全データを削除</h3>
+      <p style="margin:16px 0;line-height:1.7">すべての旅行プランと画像データを完全に削除します。<br>この操作は<strong>元に戻せません</strong>。</p>
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="closeModal('modal-reset')">キャンセル</button>
+        <button class="btn-danger" onclick="showResetStep2()">続ける →</button>
+      </div>
+    </div>
+    <!-- ステップ2: 「初期化」入力 -->
+    <div id="reset-step2" style="display:none">
+      <h3 style="color:#c62828">⚠️ 最終確認</h3>
+      <p style="margin:16px 0;line-height:1.7">削除を実行するには、下のボックスに<br><strong>「初期化」</strong>と入力してください。</p>
+      <input type="text" id="reset-confirm-input" placeholder="初期化" style="text-align:center;font-size:18px;letter-spacing:4px">
+      <p id="reset-error" style="color:#c62828;font-size:13px;margin-top:6px;display:none">「初期化」と正確に入力してください</p>
+      <div class="modal-buttons">
+        <button class="btn-secondary" onclick="closeModal('modal-reset')">キャンセル</button>
+        <button class="btn-danger" onclick="executeReset()">すべて削除する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 新規プラン -->
+<div id="modal-new-plan" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>🗺️ 新しい旅行プラン</h3>
+    <label>プラン名</label>
+    <input type="text" id="new-plan-name" placeholder="例：沖縄旅行2026">
+    <div class="time-row">
+      <div>
+        <label>出発日</label>
+        <input type="date" id="new-plan-start" onchange="updateDayCityFields()">
+      </div>
+      <div>
+        <label>帰着日</label>
+        <input type="date" id="new-plan-end" onchange="updateDayCityFields()">
+      </div>
+    </div>
+    <div id="day-city-fields"></div>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal('modal-new-plan')">キャンセル</button>
+      <button class="btn-primary" id="btn-create-plan" onclick="createPlan()">作成</button>
+    </div>
+  </div>
+</div>
+
+<!-- スポット追加/編集 -->
+<div id="modal-add-spot" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3 id="spot-modal-title">📍 スポットを追加</h3>
+    <label>カテゴリ</label>
+    <div class="category-picker" id="category-picker">
+      <button class="cat-btn active" data-cat="sightseeing">🏛️ 観光</button>
+      <button class="cat-btn" data-cat="food">🍽️ グルメ</button>
+      <button class="cat-btn" data-cat="shopping">🛍️ ショッピング</button>
+      <button class="cat-btn" data-cat="hotel">🏨 宿泊</button>
+      <button class="cat-btn" data-cat="transport">🚃 移動</button>
+      <button class="cat-btn" data-cat="other">📌 その他</button>
+    </div>
+    <label>スポット名 *</label>
+    <input type="text" id="spot-name" placeholder="例：首里城">
+    <label>住所（経路案内に使用）</label>
+    <input type="text" id="spot-address" placeholder="例：沖縄県那覇市首里金城町1-2">
+    <div class="time-row">
+      <div>
+        <label>時刻</label>
+        <input type="time" id="spot-time">
+      </div>
+      <div>
+        <label>滞在時間（分）</label>
+        <input type="number" id="spot-duration" placeholder="90" min="0">
+      </div>
+    </div>
+    <label>写真</label>
+    <div id="spot-photo-zone" class="spot-photo-zone">
+      <img id="spot-photo-preview" src="" alt="" style="display:none">
+      <div id="spot-photo-placeholder">📸 ここに写真をドラッグ<br><span style="font-size:11px;opacity:0.7">またはCtrl+Vでペースト</span></div>
+    </div>
+    <button type="button" id="spot-photo-clear" class="btn-photo-clear" style="display:none" onclick="clearSpotPhoto()">✕ 写真を削除</button>
+    <label>メモ</label>
+    <textarea id="spot-notes" placeholder="入場料・予約番号・持ち物など" rows="5"></textarea>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal('modal-add-spot')">キャンセル</button>
+      <button class="btn-primary" onclick="saveSpot()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- プランメニュー -->
+<div id="modal-plan-menu" class="modal-overlay" style="display:none">
+  <div class="modal modal-menu">
+    <button onclick="editPlanInfo()">✏️ プラン情報を編集</button>
+    <button onclick="sharePlan()">📤 共有・エクスポート</button>
+    <button onclick="importPlanNav()">📥 インポート</button>
+    <button class="danger" onclick="deletePlan()">🗑️ このプランを削除</button>
+    <button class="btn-secondary" onclick="closeModal('modal-plan-menu')">閉じる</button>
+  </div>
+</div>
+
+<!-- スポット詳細 -->
+<div id="modal-spot-detail" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <img id="detail-photo" src="" alt="" class="detail-photo" style="display:none">
+    <div class="spot-detail-header">
+      <span id="detail-cat-icon" class="detail-cat-icon"></span>
+      <h3 id="detail-name"></h3>
+    </div>
+    <div id="detail-time"    class="detail-row" style="display:none"></div>
+    <div id="detail-address" class="detail-row" style="display:none"></div>
+    <div id="detail-notes"   class="detail-row" style="display:none"></div>
+    <div class="detail-actions">
+      <a id="detail-maps-transit" class="btn-action btn-action-transit" target="_blank">🚃 経路を見る（公共交通）</a>
+      <a id="detail-maps-car"     class="btn-action btn-action-car"     target="_blank">🚗 経路を見る（車）</a>
+      <a id="detail-website"      class="btn-action btn-action-web"     target="_blank" style="display:none">🌐 公式Webサイト</a>
+    </div>
+    <div class="food-links" id="detail-local-links">
+      <h4>🍴 周辺のグルメ・名産品・観光情報</h4>
+      <div id="local-link-buttons" class="food-link-buttons"></div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-secondary danger" onclick="deleteCurrentSpot()">🗑️</button>
+      <button class="btn-secondary" onclick="editCurrentSpot()">✏️ 編集</button>
+      <button class="btn-primary" onclick="closeModal('modal-spot-detail')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<!-- ===== Excel インポートプレビューモーダル ===== -->
+<div id="modal-excel-preview" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>📊 スケジュールをインポート</h3>
+    <p id="excel-import-count" class="excel-import-count"></p>
+
+    <!-- スポットプレビュー表 -->
+    <div class="excel-preview-wrap">
+      <table class="excel-preview-table">
+        <thead>
+          <tr>
+            <th>日付</th>
+            <th>スポット名</th>
+            <th>カテゴリ</th>
+            <th>時刻</th>
+            <th>滞在</th>
+          </tr>
+        </thead>
+        <tbody id="excel-preview-tbody"></tbody>
+      </table>
+    </div>
+
+    <label>追加先プラン</label>
+    <select id="excel-import-target-plan" class="excel-plan-select"></select>
+
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal('modal-excel-preview')">キャンセル</button>
+      <button class="btn-primary" onclick="executeExcelImport()">✅ インポート実行</button>
+    </div>
+  </div>
+</div>
+
+<!-- ライトボックス -->
+<div id="lightbox" style="display:none" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

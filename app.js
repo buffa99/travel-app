@@ -1203,6 +1203,17 @@ function deleteCurrentSpot() {
   const day  = plan.days[state.dayIndex];
   const spot = day.spots.find(s => s.id === state.spotId);
   if (spot?.photo === 'idb') deleteImage('spot:' + spot.id);
+  // 削除スポットに関連するルートをクリーンアップ（ゴミデータ防止）
+  if (plan.routes && spot) {
+    for (const routeKey of Object.keys(plan.routes)) {
+      if (routeKey.startsWith(spot.id + '__') || routeKey.endsWith('__' + spot.id)) {
+        if (plan.routes[routeKey]?.image === 'idb') {
+          deleteImage('route:' + plan.id + ':' + routeKey);
+        }
+        delete plan.routes[routeKey];
+      }
+    }
+  }
   day.spots  = day.spots.filter(s => s.id !== state.spotId);
   savePlans();
   closeModal('modal-spot-detail');
@@ -2223,10 +2234,10 @@ function openRouteMemoEdit(section, plan, key) {
   const clearBtn = document.createElement('button');
   clearBtn.textContent = '🗑 クリア';
   clearBtn.className = 'btn-route-memo-clear';
-  clearBtn.addEventListener('click', () => {
+  clearBtn.addEventListener('click', async () => {
     if (!confirm('メモと画像を削除しますか？')) return;
     section.innerHTML = '';   // 即座にクリア（stale参照対策）
-    if (plan.routes?.[key]?.image === 'idb') deleteImage('route:' + plan.id + ':' + key);
+    if (plan.routes?.[key]?.image === 'idb') await deleteImage('route:' + plan.id + ':' + key);
     if (plan.routes) delete plan.routes[key];
     savePlans();
     removePaste();

@@ -1610,7 +1610,29 @@ async function exportPlan() {
 }
 
 // ===== 共有リンク =====
-async function shareLink() {
+function shareLink() {
+  const token = localStorage.getItem('gh_share_token');
+  if (!token) {
+    document.getElementById('gh-token-input').value = '';
+    document.getElementById('gh-token-error').style.display = 'none';
+    showModal('modal-gh-token');
+    return;
+  }
+  _doShareLink(token);
+}
+
+function saveGhToken() {
+  const token = document.getElementById('gh-token-input').value.trim();
+  if (!token) {
+    document.getElementById('gh-token-error').style.display = 'block';
+    return;
+  }
+  localStorage.setItem('gh_share_token', token);
+  closeModal('modal-gh-token');
+  _doShareLink(token);
+}
+
+async function _doShareLink(token) {
   const plan = getCurrentPlan();
   const planCopy = JSON.parse(JSON.stringify(plan));
   for (const day of planCopy.days || []) {
@@ -1622,29 +1644,11 @@ async function shareLink() {
     if (planCopy.routes[key].image) planCopy.routes[key].image = null;
   }
 
-  // GitHubトークンを取得（初回のみ入力を求める）
-  let token = localStorage.getItem('gh_share_token');
-  if (!token) {
-    token = prompt(
-      '初回設定：GitHubトークンを貼り付けてください。\n\n' +
-      'PowerShellで以下を実行してコピー：\n' +
-      '  gh auth token\n\n' +
-      '※このトークンはこのデバイスにのみ保存されます。'
-    );
-    if (!token) return;
-    localStorage.setItem('gh_share_token', token.trim());
-    token = token.trim();
-  }
-
-  // GitHub Gist にデータを保存
   let shareUrl;
   try {
     const res = await fetch('https://api.github.com/gists', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         description: `旅プラン: ${plan.name}`,
         public: false,
@@ -1653,7 +1657,7 @@ async function shareLink() {
     });
     if (res.status === 401) {
       localStorage.removeItem('gh_share_token');
-      alert('⚠️ トークンが無効です。もう一度試してください。');
+      alert('⚠️ トークンが無効です。もう一度「URLリンクで送る」を押してトークンを再設定してください。');
       return;
     }
     if (!res.ok) throw new Error('gist failed');
@@ -1666,7 +1670,11 @@ async function shareLink() {
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: plan.name, text: `旅プラン「${plan.name}」📍`, url: shareUrl });
+      await navigator.share({
+        title: plan.name,
+        text: `旅プラン「${plan.name}」を共有します 📍\n\nURLをタップするとインポートできます`,
+        url: shareUrl,
+      });
       return;
     } catch (e) {
       if (e.name === 'AbortError') return;

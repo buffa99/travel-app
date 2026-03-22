@@ -1652,7 +1652,6 @@ async function exportPlan() {
 // ===== 共有リンク =====
 async function shareLink() {
   const plan = getCurrentPlan();
-  // 画像は受信側に引き継げないので除外したコピーを作る
   const planCopy = JSON.parse(JSON.stringify(plan));
   for (const day of planCopy.days || []) {
     for (const spot of day.spots || []) {
@@ -1663,20 +1662,43 @@ async function shareLink() {
     if (planCopy.routes[key].image) planCopy.routes[key].image = null;
   }
 
-  // jsonblob.com にデータを保存して短いIDを取得
+  // GitHubトークンを取得（初回のみ入力を求める）
+  let token = localStorage.getItem('gh_share_token');
+  if (!token) {
+    token = prompt(
+      '初回設定：GitHubトークンを貼り付けてください。\n\n' +
+      'PowerShellで以下を実行してコピー：\n' +
+      '  gh auth token\n\n' +
+      '※このトークンはこのデバイスにのみ保存されます。'
+    );
+    if (!token) return;
+    localStorage.setItem('gh_share_token', token.trim());
+    token = token.trim();
+  }
+
+  // GitHub Gist にデータを保存
   let shareUrl;
   try {
-    const res = await fetch('https://jsonblob.com/api/jsonBlob', {
+    const res = await fetch('https://api.github.com/gists', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(planCopy),
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        description: `旅プラン: ${plan.name}`,
+        public: false,
+        files: { 'plan.json': { content: JSON.stringify(planCopy) } },
+      }),
     });
-    if (!res.ok) throw new Error('upload failed');
-    // Location ヘッダ例: https://jsonblob.com/api/jsonBlob/abc123
-    const locationHeader = res.headers.get('Location') || '';
-    const blobId = locationHeader.split('/').pop();
-    if (!blobId) throw new Error('no blob id');
-    shareUrl = window.location.origin + window.location.pathname + '#blob=' + blobId;
+    if (res.status === 401) {
+      localStorage.removeItem('gh_share_token');
+      alert('⚠️ トークンが無効です。もう一度試してください。');
+      return;
+    }
+    if (!res.ok) throw new Error('gist failed');
+    const data = await res.json();
+    shareUrl = window.location.origin + window.location.pathname + '#gist=' + data.id;
   } catch {
     alert('⚠️ リンクの作成に失敗しました。\nインターネット接続を確認してください。');
     return;
@@ -2466,17 +2488,16 @@ async function compressAllStoredImages() {
 // ===== 共有リンクからのインポート =====
 async function tryImportFromHash() {
   const hash = window.location.hash;
-  if (!hash.startsWith('#blob=')) return;
+  if (!hash.startsWith('#gist=')) return;
 
-  const blobId = hash.slice('#blob='.length);
+  const gistId = hash.slice('#gist='.length);
   history.replaceState(null, '', window.location.pathname);
 
   try {
-    const res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
-      headers: { 'Accept': 'application/json' },
-    });
+    const res = await fetch(`https://api.github.com/gists/${gistId}`);
     if (!res.ok) throw new Error('fetch failed');
-    const plan = await res.json();
+    const data = await res.json();
+    const plan = JSON.parse(data.files['plan.json'].content);
     if (!plan.id || !plan.name || !Array.isArray(plan.days)) throw new Error();
 
     const existing = plans.findIndex(p => p.id === plan.id);
@@ -2493,7 +2514,7 @@ async function tryImportFromHash() {
     alert('✅ インポートしました！');
     openPlan(plan.id);
   } catch {
-    alert('⚠️ リンクからのインポートに失敗しました。\nリンクの有効期限が切れているかもしれません。');
+    alert('⚠️ リンクからのインポートに失敗しました。');
   }
 }
 

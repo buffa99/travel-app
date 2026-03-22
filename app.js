@@ -491,44 +491,6 @@ async function migrateImagesToIndexedDB() {
   }
 }
 
-// ===== 全データ削除 =====
-function showResetStep1() {
-  document.getElementById('reset-step1').style.display = '';
-  document.getElementById('reset-step2').style.display = 'none';
-  document.getElementById('reset-confirm-input').value = '';
-  document.getElementById('reset-error').style.display = 'none';
-  showModal('modal-reset');
-}
-
-function showResetStep2() {
-  document.getElementById('reset-step1').style.display = 'none';
-  document.getElementById('reset-step2').style.display = '';
-  document.getElementById('reset-confirm-input').value = '';
-  document.getElementById('reset-confirm-input').focus();
-}
-
-async function executeReset() {
-  const input = document.getElementById('reset-confirm-input').value.trim();
-  if (input !== '初期化') {
-    document.getElementById('reset-error').style.display = 'block';
-    return;
-  }
-  // localStorage を全消去
-  localStorage.clear();
-  // IndexedDB を削除
-  try {
-    if (_imgDB) { _imgDB.close(); _imgDB = null; }
-    await new Promise((resolve, reject) => {
-      const req = indexedDB.deleteDatabase('travel_images_v1');
-      req.onsuccess = resolve;
-      req.onerror = reject;
-    });
-  } catch (e) { /* 失敗しても続行 */ }
-  // リロードせずメモリ上でリセット→ホームへ
-  plans = [];
-  closeModal('modal-reset');
-  goHome();
-}
 
 // ===== ナビゲーション =====
 function showView(id) {

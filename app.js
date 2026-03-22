@@ -1596,24 +1596,19 @@ function printDayAsPdf() {
 // ===== 共有/エクスポート =====
 function sharePlan() {
   closeModal('modal-plan-menu');
-  const plan      = getCurrentPlan();
-  const json      = JSON.stringify(plan);
-  const container = document.getElementById('qr-container');
-  container.innerHTML = '';
   showView('view-share');
+  const url = location.origin + location.pathname;
+  const el = document.getElementById('share-url-text');
+  if (el) el.textContent = url;
+}
 
-  if (json.length > 2953) {
-    container.style.display = 'none';
-    document.querySelector('.share-hint').style.display = 'none';
-  } else {
-    container.style.display = '';
-    document.querySelector('.share-hint').style.display = '';
-    const canvas = document.createElement('canvas');
-    container.appendChild(canvas);
-    QRCode.toCanvas(canvas, json, { width: 260, margin: 2 }, err => {
-      if (err) container.innerHTML = '<p style="color:red">QRコード生成エラー</p>';
-    });
-  }
+function copyAppUrl() {
+  const url = location.origin + location.pathname;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = 'コピー済✓';
+    setTimeout(() => btn.textContent = 'コピー', 2000);
+  });
 }
 
 async function exportPlan() {
@@ -1626,9 +1621,10 @@ async function exportPlan() {
     const file = new File([json], fileName, { type: 'application/json' });
     if (navigator.canShare({ files: [file] })) {
       try {
+        const appUrl = location.origin + location.pathname;
         await navigator.share({
           title: plan.name,
-          text: `旅プラン「${plan.name}」を共有します 📍`,
+          text: `旅プラン「${plan.name}」を共有します 📍\n\n【受け取り方】\n① 下のURLを開く\n${appUrl}\n② 右上の 📥 ボタンを押す\n③ 送られてきたJSONファイルを選択`,
           files: [file],
         });
         return;

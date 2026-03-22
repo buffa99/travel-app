@@ -894,23 +894,75 @@ a.btn-icon { text-decoration: none; }
 
 /* ===== 共有 ===== */
 .share-container {
+  padding: 24px 16px;
+}
+.share-steps {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  padding: 32px 16px;
+  gap: 12px;
 }
-#qr-container canvas { border-radius: 12px; box-shadow: var(--shadow); }
-.share-hint { font-size: 14px; color: var(--text-sub); text-align: center; }
-.share-buttons { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-.qr-warning {
-  background: #FFF3E0;
-  border: 1px solid #FFB74D;
-  border-radius: 10px;
-  padding: 16px;
-  font-size: 14px;
+.share-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 18px 16px;
+  box-shadow: var(--shadow);
+}
+.step-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  min-width: 32px;
   text-align: center;
-  line-height: 1.7;
+}
+.step-body strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+.step-body p {
+  font-size: 13px;
+  color: var(--text-sub);
+  margin: 0 0 12px;
+  line-height: 1.6;
+}
+.btn-share-main {
+  width: 100%;
+  font-size: 16px;
+  padding: 14px;
+}
+.share-divider {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-sub);
+  padding: 4px 0;
+}
+.url-copy-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0f4ff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-top: 6px;
+}
+.share-url-text {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text-sub);
+  word-break: break-all;
+}
+.btn-copy {
+  flex-shrink: 0;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 /* ===== インポート ===== */

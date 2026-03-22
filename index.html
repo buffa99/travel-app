@@ -60,11 +60,39 @@
       <h2>プランを共有</h2>
     </header>
     <div class="share-container">
-      <div id="qr-container"></div>
-      <p class="share-hint">奥様のスマホでQRコードを読み取るとインポートできます</p>
-      <div class="share-buttons">
-        <button class="btn-primary" onclick="shareLink()">🔗 リンクをLINEで送る</button>
-        <button class="btn-secondary" onclick="exportPlan()">📤 ファイルとして保存（LINE等で送る）</button>
+      <div class="share-steps">
+
+        <div class="share-step">
+          <div class="step-num">①</div>
+          <div class="step-body">
+            <strong>プランファイルを送る</strong>
+            <p>📱 スマホ：LINEなどで直接送れます<br>💻 PC：ダウンロードされるのでLINEに添付して送ってください</p>
+            <button class="btn-primary btn-share-main" onclick="exportPlan()">📤 ファイルを共有・保存</button>
+          </div>
+        </div>
+
+        <div class="share-divider">↓ 受け取り側の手順</div>
+
+        <div class="share-step">
+          <div class="step-num">②</div>
+          <div class="step-body">
+            <strong>アプリのURLも送る</strong>
+            <p>受け取り側がアプリを開くためにURLが必要です</p>
+            <div class="url-copy-row">
+              <span id="share-url-text" class="share-url-text"></span>
+              <button class="btn-copy" onclick="copyAppUrl()">コピー</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="share-step">
+          <div class="step-num">③</div>
+          <div class="step-body">
+            <strong>📥 ボタンを押す</strong>
+            <p>受け取り側がURLを開いたら、右上の 📥 ボタンでJSONファイルを選択</p>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

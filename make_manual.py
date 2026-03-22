@@ -413,7 +413,7 @@ def body_content(st):
     elems.append(Paragraph(
         '「地図を開く →」をタップすると、Google マップで目的地への経路が開きます。'
         '公共交通モードでは「路線情報を開く →」になります。',
-        st['body']))
+        ParagraphStyle('body_left', parent=st['body'], alignment=TA_LEFT)))
 
     elems += subsection_header('ルートメモ・画像の追加', st)
     elems.append(Paragraph(

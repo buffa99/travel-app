@@ -1,4 +1,4 @@
-const CACHE = 'travel-plan-v10';
+const CACHE = 'travel-plan-v11';
 const ASSETS = ['.', 'index.html', 'style.css?v=6', 'app.js?v=6', 'manifest.json'];
 
 self.addEventListener('install', e => {

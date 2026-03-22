@@ -1603,11 +1603,11 @@ function sharePlan() {
   showView('view-share');
 
   if (json.length > 2953) {
-    container.innerHTML = `<div class="qr-warning">
-      ⚠️ プランのデータが大きすぎてQRコードを生成できません。<br>
-      下の「ファイルとして保存」ボタンを使ってLINE等で共有してください。
-    </div>`;
+    container.style.display = 'none';
+    document.querySelector('.share-hint').style.display = 'none';
   } else {
+    container.style.display = '';
+    document.querySelector('.share-hint').style.display = '';
     const canvas = document.createElement('canvas');
     container.appendChild(canvas);
     QRCode.toCanvas(canvas, json, { width: 260, margin: 2 }, err => {
